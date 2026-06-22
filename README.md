@@ -17,12 +17,11 @@
 
 ## 📊 Схема движения данных
 
-```mermaid
-graph TD
-    User -->|/search товар| TG[Telegram Bot]
+```graph TD
+    User -->|"/search товар"| TG[Telegram Bot]
     TG -->|Проверка кэша| Cache{Есть в кэше?}
-    Cache -->|Да (Мгновенно)| Reply[Срез списка товаров]
-    Cache -->|Нет (Тяжелый запрос)| PW[Playwright + Stealth Context]
+    Cache -->|Да, мгновенно| Reply[Срез списка товаров]
+    Cache -->|Нет, тяжелый запрос| PW[Playwright + Stealth Context]
     PW -->|Имитация скролла| WB[Wildberries]
     WB -->|Парсинг ~80 карточек| TG
     TG -->|Запись в WB_CACHE| Cache
