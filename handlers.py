@@ -218,13 +218,13 @@ async def save_command(message: Message):
         await message.answer("По вашему запросу ничего не найдено.")
         return
 
-    async with aiofiles.open(file_name, mode="a", encoding="utf-8", newline="") as f:
+    async with aiofiles.open(file_name, mode="a", encoding="utf-8-sig", newline="") as f:
         writer = AsyncWriter(f, delimiter=";")
 
         if not file_exists:
             await writer.writerow(["Артикул", "Название", "Цена"])
 
         for prod in products:
-            await writer.writerow([prod.art, prod.title, prod.price])
+            await writer.writerow([prod["art"], prod["title"], prod["price"]])
 
-        await message.reply(f"Успешно сохранено в <code>{file_name}</code>!")
+        await message.reply(f"Успешно сохранено в <code>{file_name}</code>!", parse_mode="html")
