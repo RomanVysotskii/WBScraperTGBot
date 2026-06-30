@@ -4,9 +4,14 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton
 from aiogram.exceptions import TelegramBadRequest
+from dotenv import load_dotenv
+import os
+import aiofiles
+from aiocsv import AsyncWriter
 
 from wb_scraper import WBScraper
 
+load_dotenv()
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -178,3 +183,48 @@ async def sort_and_page(callback: CallbackQuery):
             pass  # Игнорируем безопасную ошибку Телеграма
         else:
             raise e
+
+@router.message(Command("save"))
+async def save_command(message: Message):
+    """
+    Обработчик поискового запроса для сохранения результата в файл. Запускает Playwright для дефолтной сортировки.
+    """
+
+    # Отсекаем команду /save (5 символов) и убираем лишние пробелы
+    query = message.text[5:].strip()
+
+    ADMIN_ID = int(os.getenv("ADMIN_ID", 0))
+
+    if message.from_user.id != ADMIN_ID:
+        await message.reply("У вас нет прав для выполнения этой команды.")
+        return
+    if not query:
+        await message.answer("Вы забыли написать, что искать. Пример: /search нужный товар")
+        return
+
+    status_msg = await message.answer("Ищу товары на Wildberries, это может занять несколько секунд...")
+
+    try:
+        products = await WBScraper().search_products(query=query, sort_type="popular")
+        file_name = "saved_products.csv"
+        file_exists = os.path.isfile(file_name)
+        await status_msg.delete()
+    except Exception as e:
+        logger.error(f"Ошибка при первичном парсинге запроса {query}: {e}")
+        await status_msg.edit_text("Произошла ошибка при поиске товара. Попробуйте позже.")
+        return
+
+    if not products:
+        await message.answer("По вашему запросу ничего не найдено.")
+        return
+
+    async with aiofiles.open(file_name, mode="a", encoding="utf-8", newline="") as f:
+        writer = AsyncWriter(f, delimiter=";")
+
+        if not file_exists:
+            await writer.writerow(["Артикул", "Название", "Цена"])
+
+        for prod in products:
+            await writer.writerow([prod.art, prod.title, prod.price])
+
+        await message.reply(f"Успешно сохранено в <code>{file_name}</code>!")
