@@ -6,7 +6,7 @@ from aiogram.client.session.aiohttp import AiohttpSession
 
 load_dotenv()
 TOKEN = getenv('BOT_TOKEN')
-proxy_url = getenv('PROXY')
+proxy_url = getenv('BOT_PROXY')
 
 if proxy_url:
     session = AiohttpSession(proxy=proxy_url)

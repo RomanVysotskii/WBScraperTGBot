@@ -14,7 +14,7 @@ class WBScraper:
 
     def __init__(self):
         self.ua = UserAgent()
-        self.proxy_url = os.getenv("PROXY")
+        self.proxy_url = os.getenv("WB_PROXY")
 
     async def search_products(self, sort_type: str = "popular", query: str = "") -> list:
         """
