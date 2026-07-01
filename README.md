@@ -33,7 +33,7 @@
 Запустите цепочку команд в терминале для полной автоматической сборки проекта:
 
 ```bash
-git clone https://github.com/RomanVysotskii/CurrencyAndMetalRatesScraper
+git clone https://github.com/RomanVysotskii/WBScraperTGBot
 cd project
 pip install -r requirements.txt
 ```
